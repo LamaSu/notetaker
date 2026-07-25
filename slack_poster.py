@@ -181,11 +181,18 @@ def main() -> int:
     save_state(session, state)
 
     notes_path = session / "notes.md"
-    last_hash = state.get("last_hash")
-    n = state.get("post_count", 0)
-    posted_final = state.get("posted_final", False)
 
     while True:
+        # Re-read state every cycle rather than trusting an in-memory copy.
+        # A manual `--once` run (or a second daemon) writes the same file, and
+        # a stale copy would duplicate an update number and clobber their work.
+        state = load_state(session)
+        state.setdefault("channel_id", channel["id"])
+        state.setdefault("channel_name", channel["name"])
+        last_hash = state.get("last_hash")
+        n = state.get("post_count", 0)
+        posted_final = state.get("posted_final", False)
+
         alive = recorder_running(session)
 
         if notes_path.exists():
