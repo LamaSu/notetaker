@@ -1,0 +1,13 @@
+{
+  "slack": {
+    "token": "xoxb-or-xoxp-token-here",
+    "team_id": "T00000000",
+    "channel_name": "notes-live",
+    "channel_id": "",
+    "_comment": "Prefer an environment variable over storing the token here. The client checks, in order: SLACK_BOT_TOKEN, SLACK_MCP_XOXP_TOKEN, SLACK_USER_TOKEN, then this file, then the Windows User environment. Scopes: chat:write, channels:read, channels:history, channels:join. Add channels:manage (bot) or channels:write (user token) only if you want it to create the channel for you."
+  },
+  "coordination": {
+    "doc_path": "./COORDINATION.md",
+    "poll_seconds": 60
+  }
+}

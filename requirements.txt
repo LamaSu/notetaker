@@ -1,0 +1,10 @@
+# Windows-only: PyAudioWPatch provides the WASAPI loopback capture that
+# stock PyAudio and sounddevice do not expose.
+PyAudioWPatch>=0.2.12
+openai-whisper>=20240930
+scipy>=1.11
+numpy>=1.24
+
+# Optional: only needed for the --backend sdk organizing path.
+# Without it, organizing runs through the `claude -p` CLI instead.
+# anthropic>=0.40

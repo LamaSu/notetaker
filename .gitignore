@@ -1,0 +1,17 @@
+# Local config — may contain a real Slack token. Ship config.example.json instead.
+config.json
+
+# Recorded sessions, transcripts, notes, and coordination state are private.
+notes/
+*.wav
+*.log
+*.err
+.slack-state.json
+.reader-state.json
+COORDINATION.md
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
