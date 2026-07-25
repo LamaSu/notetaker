@@ -40,7 +40,12 @@ from paths import coordination_doc, reader_state                               #
 DEFAULT_DOC = coordination_doc()
 STATE = reader_state()
 
-BLOCK_RE = re.compile(r"```agent\s*\n(.*?)```", re.S | re.I)
+# Both fences must start a line. Without that anchor the non-greedy match ends
+# at the first ``` anywhere — including one inside a JSON string value, which
+# happens the moment an agent's own note mentions the protocol.
+BLOCK_RE = re.compile(r"^```agent[ \t]*\n(.*?)\n^```", re.S | re.M | re.I)
+# Matches the poster's parent message, e.g. "📝 *Standup* — live notes · update 3".
+NOTES_RE = re.compile(r"\b(live|final) notes\b", re.I)
 VALID_TYPES = {"status", "claim", "done", "blocked", "question", "note", "decision"}
 
 
@@ -204,7 +209,11 @@ def sync(slack: Slack, channel: dict, doc_path: Path, log) -> int:
     events = chan_state.get("events", [])
     seen = {e["_ts"] for e in events}
 
-    msgs = slack.history(key, oldest=chan_state.get("oldest_next"), limit=1000)
+    # Scan a recent window rather than only messages newer than last sync: the
+    # notetaker's parent message is edited in place, so its ts never advances
+    # and an incremental cursor would skip it forever. Agent events are deduped
+    # by uid, so re-scanning is free.
+    msgs = slack.history(key, limit=300)
     new = 0
     notes_excerpt = chan_state.get("notes_excerpt", "")
 
@@ -213,8 +222,20 @@ def sync(slack: Slack, channel: dict, doc_path: Path, log) -> int:
         text = m.get("text", "")
 
         # Capture the most recent notetaker post as the notes excerpt.
-        if "Live notes —" in text or "Final notes —" in text:
+        # The poster keeps one parent message carrying only the summary and
+        # threads each full update beneath it, so the detail is in the replies —
+        # which conversations.history does not return. Fetch them.
+        if NOTES_RE.search(text):
             body = text.split("\n", 2)[-1]
+            if m.get("reply_count"):
+                try:
+                    reps = slack.replies(key, m["ts"])
+                    full = [r.get("text", "") for r in reps
+                            if r.get("ts") != m.get("ts")]
+                    if full:
+                        body = full[-1]
+                except SlackError:
+                    pass                    # fall back to the summary
             notes_excerpt = body[:4000]
 
         for obj in parse_agent_blocks(text):
@@ -294,9 +315,15 @@ def main() -> int:
         return 1
 
     try:
-        channel = slack.ensure_channel(args.channel)
+        if args.channel_id:
+            channel = slack.channel_info(args.channel_id)
+        else:
+            channel = slack.ensure_channel(args.channel)
+        log(f"channel #{channel['name']} ({channel['id']})")
     except SlackError as e:
-        log(f"channel error: {e}")
+        hint = ("  (this token cannot create channels — pass --channel-id "
+                "for one that already exists)" if e.error == "missing_scope" else "")
+        log(f"channel error: {e}{hint}")
         return 1
 
     if args.post:
