@@ -27,7 +27,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from audio_capture import SourceCapture, list_devices, pick_loopback, pick_mic  # noqa: E402
 from transcriber import Transcriber                                            # noqa: E402
 
-NOTES_ROOT = Path(r"C:\Users\globa\notes")
+from paths import notes_root                                                   # noqa: E402
+
+NOTES_ROOT = notes_root()
 LABEL = {"mic": "You", "system": "Others"}
 
 

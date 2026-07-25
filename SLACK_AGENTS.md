@@ -31,15 +31,15 @@ readable by everyone in the workspace and message history is durable.
 Verify access:
 
 ```bash
-python C:\Users\globa\notetaker\slack_client.py
-# OK  team=<workspace> (T0BKRHTCC4W)  bot=<name> (U…)
+python slack_client.py
+# OK  team=<workspace> (T0…)  bot=<name> (U…)
 ```
 
 ---
 
 ## 2. The coordination document
 
-`C:\Users\globa\notes\COORDINATION.md`
+`<notes-dir>/COORDINATION.md` (default `~/notes/COORDINATION.md`, override with `NOTETAKER_NOTES_DIR`)
 
 This is the file to read **before you start work**. It is regenerated from the
 channel on every sync, so it always reflects what every agent has posted. It
@@ -59,13 +59,13 @@ what it says, post to the channel.
 Refresh it yourself before relying on it:
 
 ```bash
-python C:\Users\globa\notetaker\slack_reader.py --once
+python slack_reader.py --once
 ```
 
 Or keep it continuously current:
 
 ```bash
-python C:\Users\globa\notetaker\slack_reader.py --watch --interval 60
+python slack_reader.py --watch --interval 60
 ```
 
 ---
@@ -108,7 +108,7 @@ Types:
 Easiest way to post:
 
 ```bash
-python C:\Users\globa\notetaker\slack_reader.py \
+python slack_reader.py \
   --agent impl-alpha --project arm-skills \
   --task "camera calibration" \
   --post claim "starting now, touching vision/calib.py"
@@ -117,7 +117,7 @@ python C:\Users\globa\notetaker\slack_reader.py \
 Or from your own code:
 
 ```python
-import sys; sys.path.insert(0, r"C:\Users\globa\notetaker")
+import sys; sys.path.insert(0, "/path/to/notetaker")
 from slack_client import Slack
 from slack_reader import post_update
 
@@ -152,7 +152,7 @@ post_update(slack, channel["id"], "impl-alpha", "done",
 If you would rather parse the channel yourself:
 
 ```python
-import sys; sys.path.insert(0, r"C:\Users\globa\notetaker")
+import sys; sys.path.insert(0, "/path/to/notetaker")
 from slack_client import Slack
 from slack_reader import parse_agent_blocks
 
@@ -171,9 +171,11 @@ for m in slack.history(ch["id"], limit=200):
 
 | Path | Role |
 |---|---|
-| `C:\Users\globa\notetaker\notetaker.py` | records audio, writes transcript + notes |
-| `C:\Users\globa\notetaker\slack_poster.py` | posts notes to the channel on an interval |
-| `C:\Users\globa\notetaker\slack_reader.py` | channel → `COORDINATION.md`; also posts updates |
-| `C:\Users\globa\notetaker\slack_client.py` | Slack Web API wrapper (stdlib only) |
-| `C:\Users\globa\notes\COORDINATION.md` | the shared document (generated) |
-| `C:\Users\globa\notes\<session>\` | per-session `transcript.md` + `notes.md` |
+| `notetaker.py` | records audio, writes transcript + notes |
+| `slack_poster.py` | posts notes to the channel on an interval |
+| `slack_reader.py` | channel → `COORDINATION.md`; also posts updates |
+| `slack_client.py` | Slack Web API wrapper (stdlib only) |
+| `<notes-dir>/COORDINATION.md` | the shared document (generated) |
+| `<notes-dir>/<session>/` | per-session `transcript.md` + `notes.md` |
+
+`<notes-dir>` defaults to `~/notes`; set `NOTETAKER_NOTES_DIR` to move it.

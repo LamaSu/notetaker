@@ -35,8 +35,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from slack_client import Slack, SlackError, load_config  # noqa: E402
 
-DEFAULT_DOC = Path(r"C:\Users\globa\notes\COORDINATION.md")
-STATE = Path(r"C:\Users\globa\notes\.reader-state.json")
+from paths import coordination_doc, reader_state                               # noqa: E402
+
+DEFAULT_DOC = coordination_doc()
+STATE = reader_state()
 
 BLOCK_RE = re.compile(r"```agent\s*\n(.*?)```", re.S | re.I)
 VALID_TYPES = {"status", "claim", "done", "blocked", "question", "note", "decision"}
@@ -189,7 +191,7 @@ def build_doc(channel_name: str, channel_id: str, events: list[dict],
 
     L.append("---")
     L.append(f"_{len(events)} agent messages ingested. "
-             f"Protocol: `C:\\Users\\globa\\notetaker\\SLACK_AGENTS.md`_")
+             "Protocol: `SLACK_AGENTS.md`_")
     return "\n".join(L) + "\n"
 
 
@@ -265,6 +267,10 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--channel", default=(cfg.get("slack") or {}).get("channel_name",
                                                                      "notes-live"))
+    ap.add_argument("--channel-id", default=(cfg.get("slack") or {}).get("channel_id")
+                    or None,
+                    help="read this existing channel id (skips lookup/creation; "
+                         "needed if the token lacks channels:write)")
     ap.add_argument("--doc", default=str((cfg.get("coordination") or {}).get(
         "doc_path", DEFAULT_DOC)))
     ap.add_argument("--watch", action="store_true", help="poll continuously")

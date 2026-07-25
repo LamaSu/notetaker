@@ -28,7 +28,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from slack_client import Slack, SlackError, chunk, get_token, to_mrkdwn  # noqa: E402
 
-NOTES_ROOT = Path(r"C:\Users\globa\notes")
+from paths import notes_root                                                   # noqa: E402
+
+NOTES_ROOT = notes_root()
 HEADER = "📝 *Live notes — {title}*  ·  update {n}  ·  {clock}"
 
 

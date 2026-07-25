@@ -2,7 +2,7 @@
 
 Credentials are read in this order:
   1. SLACK_BOT_TOKEN environment variable
-  2. "slack.token" in C:\\Users\\globa\\notetaker\\config.json
+  2. "slack.token" in config.json next to this file
 
 Needs a bot token (xoxb-...) with these scopes:
   chat:write, channels:manage, channels:read, channels:history, channels:join
